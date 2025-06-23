@@ -1,52 +1,29 @@
 use chrono::Local;
-use iced::{executor, widget::Text, Application, Element, Settings, Subscription, Theme};
-use std::process::Command;
-use std::time::Duration;
+use eframe::egui;
+use eframe::App as EframeApp;
 
-#[derive(Debug, Clone)]
-enum Message {
-    Tick,
-}
+struct ClockApp;
 
-struct Clock {
-    time: String,
-}
-
-impl Application for Clock {
-    type Executor = executor::Default;
-    type Message = Message;
-    type Theme = Theme;
-    type Flags = ();
-
-    fn new(_flags: ()) -> (Self, Command<Self::Message>) {
-        let now = Local::now().format("%H:%M:%S").to_string();
-        (Self { time: now }, Command::none())
-    }
-
-    fn title(&self) -> String {
-        String::from("Rust Clock")
-    }
-
-    fn update(&mut self, message: Message) -> Command<Message> {
-        if let Message::Tick = message {
-            self.time = Local::now().format("%H:%M:%S").to_string();
-        }
-        Command::none()
-    }
-
-    fn view(&self) -> Element<Message> {
-        Text::new(&self.time).size(48).into()
-    }
-
-    fn theme(&self) -> Theme {
-        Theme::Dark
-    }
-
-    fn subscription(&self) -> Subscription<Message> {
-        Subscription::every(Duration::from_secs(1)).map(|_| Message::Tick)
+impl EframeApp for ClockApp {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            let time = Local::now().format("%H:%M:%S").to_string();
+            ui.heading(time);
+        });
+        ctx.request_repaint_after(std::time::Duration::from_millis(200));
     }
 }
 
-fn main() -> iced::Result {
-    Clock::run(Settings::default())
+fn main() -> eframe::Result<()> {
+    let options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default()
+            .with_inner_size([200.0, 80.0])
+            .with_title("Rust Clock"),
+        ..Default::default()
+    };
+    eframe::run_native(
+        "Rusty Clock",
+        options,
+        Box::new(|_cc| Ok(Box::new(ClockApp))),
+    )
 }
