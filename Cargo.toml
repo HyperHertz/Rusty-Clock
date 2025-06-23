@@ -1,8 +1,17 @@
 [package]
-name = "egui-clock"
+name = "rusty-clock"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 eframe = "0.31.1"
 chrono = "0.4.41"
+
+[package.metadata.bundle]
+name = "Rusty Clock"
+version = "0.8"
+short_description = "Simple Clock Window"
+long_description = "A simple cross-platform GUI clock written in Rust with egui and eframe."
+identifier = "io.github.HyperHertz.Rusty-Clock" 
+executable = "Rusty-Clock"
+category = "Utility"
