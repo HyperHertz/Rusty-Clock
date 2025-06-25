@@ -6,18 +6,28 @@ use chrono::Local;
 use eframe::egui;
 use eframe::App as EframeApp;
 
-struct ClockApp;
+#[derive(Default)]
+struct ClockApp {
+    default_theme: bool,
+}
 
 impl EframeApp for ClockApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         // Timer variable, centering, and themes
         egui::CentralPanel::default().show(ctx, |ui| {
             let time = Local::now().format("%I:%M:%S %p\n%b %e %a, %Y").to_string();
+
+            // this fixes the ugly default text colors on launch
+            if !self.default_theme {
+                let mut visuals = egui::Visuals::dark();
+                visuals.override_text_color = Some(egui::Color32::from_rgb(209, 209, 209));
+                ctx.set_visuals(visuals);
+                self.default_theme = true; // Mark the style as set
+            }
+
             ui.vertical_centered(|ui| {
-                //ui.label(&time);
                 ui.heading(&time);
 
-                // TO-DO, makes buttons, probably use this to let user change themes
                 ui.label("Themes:");
                 if ui
                     .add(egui::Button::new("Green and Purple").corner_radius(12.0))
@@ -40,7 +50,8 @@ impl EframeApp for ClockApp {
                     .add(egui::Button::new("Dark Theme").corner_radius(12.0))
                     .clicked()
                 {
-                    let visuals = egui::Visuals::dark();
+                    let mut visuals = egui::Visuals::dark();
+                    visuals.override_text_color = Some(egui::Color32::from_rgb(209, 209, 209));
                     ctx.set_visuals(visuals);
                 }
                 if ui
@@ -49,7 +60,7 @@ impl EframeApp for ClockApp {
                 {
                     let mut visuals = egui::Visuals::dark();
                     visuals.override_text_color = Some(egui::Color32::from_rgb(255, 0, 0));
-                    visuals.panel_fill = egui::Color32::from_rgb(51, 51, 51);
+                    visuals.panel_fill = egui::Color32::from_rgb(27, 27, 27);
                     ctx.set_visuals(visuals);
                 }
                 if ui
@@ -58,17 +69,11 @@ impl EframeApp for ClockApp {
                 {
                     let mut visuals = egui::Visuals::dark();
                     visuals.override_text_color = Some(egui::Color32::from_rgb(51, 255, 0));
-                    visuals.panel_fill = egui::Color32::from_rgb(51, 51, 51);
+                    visuals.panel_fill = egui::Color32::from_rgb(27, 27, 27);
                     ctx.set_visuals(visuals);
                 }
             });
         });
-
-        // // TO-DO, figure out the rounded corners modules
-        // let mut style = (*ctx.style()).clone();
-        // style.spacing.item_spacing = egui::vec2(24.0, 18.0); // Space between widgets
-        // style.visuals.window_corner_radius = egui::CornerRadius::same(10); // Rounded corners
-        // ctx.set_style(style);
 
         // Change fonts and font sizes:
         let mut fonts = egui::FontDefinitions::default();
@@ -94,7 +99,7 @@ impl EframeApp for ClockApp {
 }
 
 fn main() -> eframe::Result<()> {
-    // Window
+    // Window options
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([250.0, 300.0])
@@ -102,10 +107,12 @@ fn main() -> eframe::Result<()> {
         ..Default::default()
     };
 
-    // Credits
     eframe::run_native(
         "Rusty Clock",
         options,
-        Box::new(|_cc| Ok(Box::new(ClockApp))),
+        Box::new(|_cc| {
+            let app = ClockApp::default();
+            Ok(Box::new(app))
+        }),
     )
 }
